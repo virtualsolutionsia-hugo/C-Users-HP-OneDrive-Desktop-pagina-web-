@@ -10,6 +10,10 @@
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
         body { font-family: "Outfit", sans-serif; }
         .gradient-text { background: linear-gradient(90deg, #3B82F6, #8B5CF6, #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .chat-modal { display: none; }
+        .chat-modal.active { display: flex; }
+        .floating-btn { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100">
@@ -27,7 +31,10 @@
         <div class="max-w-7xl mx-auto text-center">
             <h1 class="text-5xl md:text-6xl font-bold mb-6">Dejamos de vender tecnología.<br><span class="gradient-text">Empezamos a resolver tu negocio.</span></h1>
             <p class="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">Somos Virtual Solutions IA, la oficina de negocios digitales líder en transformar negocios, emprendimientos y ventas en Posadas y toda Argentina.</p>
-            <a href="#contacto" class="bg-blue-600 hover:bg-blue-700 px-10 py-4 rounded-lg font-bold inline-block text-lg">Quiero vender más 🚀</a>
+            <div class="flex gap-4 justify-center flex-wrap">
+                <a href="#contacto" class="bg-blue-600 hover:bg-blue-700 px-10 py-4 rounded-lg font-bold text-lg">Quiero vender más 🚀</a>
+                <button onclick="openChat()" class="border-2 border-purple-500 hover:bg-purple-500/10 px-10 py-4 rounded-lg font-bold text-lg">Hablar con el bot 🤖</button>
+            </div>
         </div>
     </section>
 
@@ -201,10 +208,71 @@
         </div>
     </footer>
 
-    <!-- BOTÓN FLOTANTE WHATSAPP -->
-    <a href="https://wa.me/543765046699" target="_blank" class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-40">
-        <i class="fa-brands fa-whatsapp text-white text-2xl"></i>
-    </a>
+    <!-- BOTONES FLOTANTES -->
+    <div class="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
+        <!-- Bot -->
+        <button onclick="openChat()" class="floating-btn bg-purple-600 hover:bg-purple-700 w-14 h-14 rounded-full flex items-center justify-center shadow-lg">
+            <i class="fa-solid fa-robot text-white text-2xl"></i>
+        </button>
+        <!-- WhatsApp -->
+        <a href="https://wa.me/543765046699" target="_blank" class="floating-btn bg-green-500 hover:bg-green-600 w-14 h-14 rounded-full flex items-center justify-center shadow-lg">
+            <i class="fa-brands fa-whatsapp text-white text-2xl"></i>
+        </a>
+    </div>
+
+    <!-- MODAL CHAT -->
+    <div id="chatModal" class="chat-modal fixed inset-0 z-50 bg-black/70 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-slate-900 rounded-2xl w-full max-w-md h-96 flex flex-col border border-slate-700 shadow-2xl">
+            <div class="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="bg-purple-600 p-2 rounded-lg">
+                        <i class="fa-solid fa-robot text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Bot Virtual Solutions IA</h3>
+                        <p class="text-xs text-green-400">● En línea</p>
+                    </div>
+                </div>
+                <button onclick="closeChat()" class="text-slate-400 hover:text-white text-2xl">×</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4">
+                <div class="space-y-4">
+                    <div class="bg-slate-800 p-4 rounded-lg">
+                        <p class="text-sm">👋 ¡Hola! Soy el bot de Virtual Solutions IA. ¿En qué puedo ayudarte?</p>
+                    </div>
+                    <div class="text-right">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">Quiero una página web</button>
+                    </div>
+                    <div class="text-right">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">Necesito automatización</button>
+                    </div>
+                    <div class="text-right">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">Tengo otra consulta</button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-slate-700 p-4">
+                <input type="text" placeholder="Escribe tu mensaje..." class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openChat() {
+            document.getElementById("chatModal").classList.add("active");
+            document.body.style.overflow = "hidden";
+        }
+        function closeChat() {
+            document.getElementById("chatModal").classList.remove("active");
+            document.body.style.overflow = "auto";
+        }
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeChat();
+        });
+        document.getElementById("chatModal").addEventListener("click", (e) => {
+            if (e.target.id === "chatModal") closeChat();
+        });
+    </script>
 
 </body>
 </html>
