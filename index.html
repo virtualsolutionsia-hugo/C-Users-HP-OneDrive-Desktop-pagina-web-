@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -14,6 +14,22 @@
         .chat-modal.active { display: flex; }
         .floating-btn { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+        /* Chat messages */
+        .msg-bot { background: #1e293b; border-radius: 0 12px 12px 12px; padding: 10px 14px; max-width: 85%; font-size: 0.875rem; line-height: 1.5; }
+        .msg-user { background: #2563eb; border-radius: 12px 0 12px 12px; padding: 10px 14px; max-width: 85%; font-size: 0.875rem; line-height: 1.5; margin-left: auto; }
+        .chat-bubble { display: flex; margin-bottom: 12px; }
+        .chat-bubble.user { justify-content: flex-end; }
+        .quick-btn { background: #1e293b; border: 1px solid #475569; color: #cbd5e1; padding: 8px 14px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .quick-btn:hover { background: #2563eb; border-color: #2563eb; color: white; }
+
+        /* Typing indicator */
+        .typing-dots span { display: inline-block; width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; margin: 0 2px; animation: bounce 1.2s infinite; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+        #chatMessages { scroll-behavior: smooth; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100">
@@ -210,11 +226,9 @@
 
     <!-- BOTONES FLOTANTES -->
     <div class="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
-        <!-- Bot -->
         <button onclick="openChat()" class="floating-btn bg-purple-600 hover:bg-purple-700 w-14 h-14 rounded-full flex items-center justify-center shadow-lg">
             <i class="fa-solid fa-robot text-white text-2xl"></i>
         </button>
-        <!-- WhatsApp -->
         <a href="https://wa.me/543765046699" target="_blank" class="floating-btn bg-green-500 hover:bg-green-600 w-14 h-14 rounded-full flex items-center justify-center shadow-lg">
             <i class="fa-brands fa-whatsapp text-white text-2xl"></i>
         </a>
@@ -222,8 +236,10 @@
 
     <!-- MODAL CHAT -->
     <div id="chatModal" class="chat-modal fixed inset-0 z-50 bg-black/70 backdrop-blur-sm items-center justify-center p-4">
-        <div class="bg-slate-900 rounded-2xl w-full max-w-md h-96 flex flex-col border border-slate-700 shadow-2xl">
-            <div class="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-800">
+        <div class="bg-slate-900 rounded-2xl w-full max-w-md flex flex-col border border-slate-700 shadow-2xl" style="height: 520px;">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-800 rounded-t-2xl">
                 <div class="flex items-center gap-3">
                     <div class="bg-purple-600 p-2 rounded-lg">
                         <i class="fa-solid fa-robot text-white"></i>
@@ -233,42 +249,196 @@
                         <p class="text-xs text-green-400">● En línea</p>
                     </div>
                 </div>
-                <button onclick="closeChat()" class="text-slate-400 hover:text-white text-2xl">×</button>
+                <button onclick="closeChat()" class="text-slate-400 hover:text-white text-2xl leading-none">×</button>
             </div>
-            <div class="flex-1 overflow-y-auto p-4">
-                <div class="space-y-4">
-                    <div class="bg-slate-800 p-4 rounded-lg">
-                        <p class="text-sm">👋 ¡Hola! Soy el bot de Virtual Solutions IA. ¿En qué puedo ayudarte?</p>
-                    </div>
-                    <div class="text-right">
-                        <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">Quiero una página web</button>
-                    </div>
-                    <div class="text-right">
-                        <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">Necesito automatización</button>
-                    </div>
-                    <div class="text-right">
-                        <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">Tengo otra consulta</button>
-                    </div>
-                </div>
+
+            <!-- Mensajes -->
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-1">
+                <!-- El bot saluda al abrir -->
             </div>
-            <div class="border-t border-slate-700 p-4">
-                <input type="text" placeholder="Escribe tu mensaje..." class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+
+            <!-- Botones rápidos -->
+            <div id="quickButtons" class="px-4 pb-2 flex flex-col gap-2"></div>
+
+            <!-- Input -->
+            <div class="border-t border-slate-700 p-3 flex gap-2">
+                <input id="chatInput" type="text" placeholder="Escribe tu mensaje..." class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+                <button onclick="sendUserMessage()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-semibold">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </div>
 
     <script>
+        // ─── BASE DE CONOCIMIENTO DEL BOT ───────────────────────────────────────────
+        const FAQ = [
+            {
+                keywords: ["precio", "costo", "cuesta", "cuánto", "cuanto", "presupuesto", "cobran", "tarifa", "valor"],
+                question: "💰 ¿Cuánto cuesta una página web?",
+                answer: "¡Genial que te interese! El precio depende del tipo de proyecto que necesitás. Lo mejor es que agendemos una demo gratuita donde te mostramos todo y armamos un presupuesto a medida. 📅\n\n¿Te gustaría agendar ahora por WhatsApp?",
+                action: { label: "Agendar por WhatsApp 📲", url: "https://wa.me/543765046699?text=Hola!%20Quiero%20agendar%20una%20demo%20y%20presupuesto%20para%20mi%20p%C3%A1gina%20web." }
+            },
+            {
+                keywords: ["tiempo", "demora", "demoran", "cuánto tarda", "plazo", "días", "semanas", "cuándo", "cuando", "entrega"],
+                question: "⏱️ ¿Cuánto demora el trabajo?",
+                answer: "El tiempo depende del proyecto, pero en general trabajamos entre 2 y 4 semanas. En la demo gratuita te damos un plazo exacto para tu caso. 🗓️\n\n¿Querés agendar tu diagnóstico gratuito?",
+                action: { label: "Agendar diagnóstico gratis 🚀", url: "https://wa.me/543765046699?text=Hola!%20Quiero%20agendar%20mi%20diagn%C3%B3stico%20gratuito." }
+            },
+            {
+                keywords: ["pequeño", "chico", "emprendedor", "negocio pequeño", "pyme", "pequeña", "chica", "startup", "emprendimiento"],
+                question: "🏪 ¿Trabajan con negocios pequeños?",
+                answer: "¡Sí, de hecho es nuestro cliente ideal! 🙌 Trabajamos con emprendedores y negocios de todos los tamaños. Tenemos planes adaptados a cada bolsillo y necesidad.\n\n¿Contanos qué tipo de negocio tenés?",
+                action: null
+            }
+        ];
+
+        const FALLBACK = "Entiendo tu consulta 😊. Para darte la mejor respuesta, lo más rápido es chatear directo con nuestro equipo por WhatsApp. ¡Respondemos en minutos!";
+        const FALLBACK_ACTION = { label: "Hablar con el equipo 💬", url: "https://wa.me/543765046699?text=Hola!%20Tengo%20una%20consulta." };
+
+        const GREETING = "👋 ¡Hola! Soy el bot de Virtual Solutions IA. Estoy acá para responder tus dudas.\n\n¿Sobre qué te puedo ayudar?";
+        const QUICK_OPTIONS = [
+            "💰 ¿Cuánto cuesta una página web?",
+            "⏱️ ¿Cuánto demora el trabajo?",
+            "🏪 ¿Trabajan con negocios pequeños?",
+            "📞 Hablar con el equipo"
+        ];
+
+        // ─── ESTADO ──────────────────────────────────────────────────────────────────
+        let chatInitialized = false;
+
+        // ─── FUNCIONES PRINCIPALES ───────────────────────────────────────────────────
         function openChat() {
             document.getElementById("chatModal").classList.add("active");
             document.body.style.overflow = "hidden";
+            if (!chatInitialized) {
+                chatInitialized = true;
+                setTimeout(() => {
+                    addBotMessage(GREETING);
+                    setTimeout(showQuickOptions, 600);
+                }, 300);
+            }
         }
+
         function closeChat() {
             document.getElementById("chatModal").classList.remove("active");
             document.body.style.overflow = "auto";
         }
+
+        function addBotMessage(text, action) {
+            const messages = document.getElementById("chatMessages");
+            const bubble = document.createElement("div");
+            bubble.className = "chat-bubble";
+            
+            let actionHtml = "";
+            if (action) {
+                actionHtml = `<a href="${action.url}" target="_blank" class="inline-block mt-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">${action.label}</a>`;
+            }
+
+            bubble.innerHTML = `<div class="msg-bot">${text.replace(/\n/g, "<br>")}${actionHtml}</div>`;
+            messages.appendChild(bubble);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function addUserMessage(text) {
+            const messages = document.getElementById("chatMessages");
+            const bubble = document.createElement("div");
+            bubble.className = "chat-bubble user";
+            bubble.innerHTML = `<div class="msg-user">${text}</div>`;
+            messages.appendChild(bubble);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function showTyping() {
+            const messages = document.getElementById("chatMessages");
+            const typing = document.createElement("div");
+            typing.className = "chat-bubble";
+            typing.id = "typingIndicator";
+            typing.innerHTML = `<div class="msg-bot"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+            messages.appendChild(typing);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function hideTyping() {
+            const el = document.getElementById("typingIndicator");
+            if (el) el.remove();
+        }
+
+        function showQuickOptions() {
+            const container = document.getElementById("quickButtons");
+            container.innerHTML = "";
+            QUICK_OPTIONS.forEach(opt => {
+                const btn = document.createElement("button");
+                btn.className = "quick-btn";
+                btn.textContent = opt;
+                btn.onclick = () => handleQuickOption(opt);
+                container.appendChild(btn);
+            });
+        }
+
+        function clearQuickOptions() {
+            document.getElementById("quickButtons").innerHTML = "";
+        }
+
+        function handleQuickOption(option) {
+            clearQuickOptions();
+            addUserMessage(option);
+
+            if (option === "📞 Hablar con el equipo") {
+                showTyping();
+                setTimeout(() => {
+                    hideTyping();
+                    addBotMessage("¡Perfecto! Nuestro equipo está listo para atenderte. 💪", { label: "Ir a WhatsApp 💬", url: "https://wa.me/543765046699?text=Hola!%20Quiero%20hablar%20con%20el%20equipo." });
+                    setTimeout(showQuickOptions, 800);
+                }, 800);
+                return;
+            }
+
+            const match = findAnswer(option);
+            showTyping();
+            setTimeout(() => {
+                hideTyping();
+                addBotMessage(match.answer, match.action);
+                setTimeout(showQuickOptions, 800);
+            }, 900);
+        }
+
+        function findAnswer(text) {
+            const lower = text.toLowerCase();
+            for (const faq of FAQ) {
+                if (faq.keywords.some(kw => lower.includes(kw))) {
+                    return { answer: faq.answer, action: faq.action };
+                }
+            }
+            return { answer: FALLBACK, action: FALLBACK_ACTION };
+        }
+
+        function sendUserMessage() {
+            const input = document.getElementById("chatInput");
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = "";
+            clearQuickOptions();
+            addUserMessage(text);
+
+            const match = findAnswer(text);
+            showTyping();
+            setTimeout(() => {
+                hideTyping();
+                addBotMessage(match.answer, match.action);
+                setTimeout(showQuickOptions, 800);
+            }, 900);
+        }
+
+        // ─── EVENTOS ─────────────────────────────────────────────────────────────────
         document.addEventListener("keydown", (e) => {
             if (e.key === "Escape") closeChat();
         });
+
+        document.getElementById("chatInput").addEventListener("keydown", (e) => {
+            if (e.key === "Enter") sendUserMessage();
+        });
+
         document.getElementById("chatModal").addEventListener("click", (e) => {
             if (e.target.id === "chatModal") closeChat();
         });
