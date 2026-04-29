@@ -25,8 +25,8 @@
 
         /* Typing indicator */
         .typing-dots span { display: inline-block; width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; margin: 0 2px; animation: bounce 1.2s infinite; }
-        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.6s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.12s; }
         @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
 
         #chatMessages { scroll-behavior: smooth; }
@@ -211,7 +211,7 @@
     <footer class="bg-slate-950 border-t border-slate-800 py-12 px-4">
         <div class="max-w-6xl mx-auto text-center">
             <h2 class="text-2xl font-bold mb-4">Virtual Solutions IA</h2>
-            <p class="text-slate-400 mb-6">Oficina de negocios digitales líder en transformar negocios en Posadas y toda Argentina</p>
+            <p class="text-slate-400 mb-6">Oficina de negocios digitales para transformar negocios en Posadas y la region</p>
             <div class="flex justify-center gap-6 mb-8">
                 <a href="https://wa.me/543765046699" target="_blank" class="text-green-400 hover:text-green-300 text-xl">
                     <i class="fa-brands fa-whatsapp"></i> WhatsApp
@@ -275,7 +275,7 @@
         const FAQ = [
             {
                 keywords: ["precio", "costo", "cuesta", "cuánto", "cuanto", "presupuesto", "cobran", "tarifa", "valor"],
-                question: "💰 ¿Cuánto cuesta una página web?",
+                question: "💰 ¿Cuánto cuesta una página web, bot?",
                 answer: "¡Genial que te interese! El precio depende del tipo de proyecto que necesitás. Lo mejor es que agendemos una demo gratuita donde te mostramos todo y armamos un presupuesto a medida. 📅\n\n¿Te gustaría agendar ahora por WhatsApp?",
                 action: { label: "Agendar por WhatsApp 📲", url: "https://wa.me/543765046699?text=Hola!%20Quiero%20agendar%20una%20demo%20y%20presupuesto%20para%20mi%20p%C3%A1gina%20web." }
             },
@@ -298,7 +298,7 @@
 
         const GREETING = "👋 ¡Hola! Soy el bot de Virtual Solutions IA. Estoy acá para responder tus dudas.\n\n¿Sobre qué te puedo ayudar?";
         const QUICK_OPTIONS = [
-            "💰 ¿Cuánto cuesta una página web?",
+            "💰 ¿Cuánto cuesta una página web, bot?",
             "⏱️ ¿Cuánto demora el trabajo?",
             "🏪 ¿Trabajan con negocios pequeños?",
             "📞 Hablar con el equipo"
